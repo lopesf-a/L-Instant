@@ -6,20 +6,15 @@
     <!-- Ajoutez ici vos liens CSS et scripts JavaScript -->
 </head>
 <body>
-    <h1>L'Instant - Partage de Photos Éphémères</h1>
-
-   
-
     <!-- Liste des photos partagées -->
     
-    <div class="parent">
-        <div class="div1"> 
-            <div id="photoList"></div>
-        </div>
-        <div class="div2"> </div>
-        <div class="div3"> </div>
-        <div class="div4"> </div>
-        </div> 
+    <div class="photo-grid" id="photo-grid"></div>
+
+    <!-- Div pour afficher l'image agrandie -->
+    <div id="image-overlay">
+        <span class="close-button" id="close_img_popup">X</span>
+        <img id="enlarged-image" src="" alt="Image agrandie">
+    </div>
     <!-- Scripts JavaScript pour interagir avec le backend -->
     <script src="./server.js">
          // Fonction pour afficher la liste des photos partagées
@@ -140,7 +135,12 @@
         showPopupButton.addEventListener('click', () => {
             uploadPopup.style.display = 'block';
         });
-
+        // Fonction pour fermer la pop-up
+        const closePopupButton1 = document.getElementById('close_img_popup');
+        closePopupButton1.addEventListener('click', () => {
+            const imageOverlay = document.getElementById('image-overlay');
+            imageOverlay.style.display = 'none';
+        });
         closePopupButton.addEventListener('click', () => {
             uploadPopup.style.display = 'none';
         });
@@ -161,6 +161,83 @@
                 alert("Sélectionnez un fichier à télécharger.");
             }
         });
+         // Données de photos avec likes (à remplacer par vos propres données)
+         const photos = [
+            { url: 'classerogned.png', likes: 10, shares: 5 },
+            { url: 'casque_franck_v1.png', likes: 15, shares: 3 },
+            { url: 'casque_franck_v2.png', likes: 8, shares: 2 },
+            { url: 'fc0f42tqzqpb1.jpg', likes: 8, shares: 2 },
+            { url: '02.jpg', likes: 8, shares: 2 },
+            { url: '02.jpg', likes: 8, shares: 2 },
+            // Ajoutez d'autres photos ici
+        ];
+
+        // Triez les photos par nombre de likes (du plus élevé au plus bas)
+        photos.sort((a, b) => b.likes - a.likes);
+
+        // Fonction pour afficher les photos dans la grille
+        function displayPhotos() {
+            const photoGrid = document.getElementById('photo-grid');
+            photoGrid.innerHTML = '';
+            photos.forEach((photo, index) => {
+                const photoCard = document.createElement('div');
+                photoCard.classList.add('photo-card');
+                if (index === 0) {
+                    // Ajoutez une couronne à l'image avec le plus de likes
+                    const crown = document.createElement('div');
+                    crown.classList.add('crown');
+                    crown.innerText = 'You receive the crown!';
+                    photoCard.appendChild(crown);
+                }
+                photoCard.innerHTML += `
+                    <img src="${photo.url}" alt="Photo ${index + 1}">
+                    <p>Likes: ${photo.likes}</p>
+                    <p>Shares: ${photo.shares}</p>
+                    <button class="action-button" onclick="likePhoto(${index})">Like</button>
+                    <button class="action-button" onclick="sharePhoto(${index})">Share</button>
+                    <button class="action-button" onclick="downloadPhoto('${photo.url}')">Download</button>
+                    <button class="action-button" onclick="viewPhoto('${photo.url}')">View</button>
+                `;
+                photoGrid.appendChild(photoCard);
+            });
+        }
+
+        // Fonction pour agrandir et afficher une photo
+        function viewPhoto(url) {
+            const enlargedImage = document.getElementById('enlarged-image');
+            enlargedImage.src = url;
+            const imageOverlay = document.getElementById('image-overlay');
+            imageOverlay.style.display = 'block';
+        }
+
+        // Fonction pour liker une photo (à implémenter)
+        function likePhoto(index) {
+            // Mettez en œuvre la logique de like ici
+            photos[index].likes++;
+            // Triez à nouveau les photos après le like
+            photos.sort((a, b) => b.likes - a.likes);
+            displayPhotos(); // Mettez à jour la grille après le like
+        }
+
+        // Fonction pour partager une photo (à implémenter)
+        function sharePhoto(index) {
+            // Mettez en œuvre la logique de partage ici
+            photos[index].shares++;
+            displayPhotos(); // Mettez à jour la grille après le partage
+        }
+
+        // Fonction pour télécharger une photo
+        function downloadPhoto(url) {
+            // Vous pouvez implémenter la logique de téléchargement ici
+            // Par exemple, créer un lien de téléchargement pour l'utilisateur
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'photo.jpg';
+            link.click();
+        }
+
+        // Afficher les photos initiales
+        displayPhotos();
     </script>
 </body>
 </html>
