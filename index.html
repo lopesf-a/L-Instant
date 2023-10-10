@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>L'Instant - Partage de Photos Éphémères</title>
+    <link rel="stylesheet" href="./style.css">
+    <!-- Ajoutez ici vos liens CSS et scripts JavaScript -->
+</head>
+<body>
+    <h1>L'Instant - Partage de Photos Éphémères</h1>
+
+   
+
+    <!-- Liste des photos partagées -->
+    
+    <div class="parent">
+        <div class="div1"> 
+            <div id="photoList"></div>
+        </div>
+        <div class="div2"> </div>
+        <div class="div3"> </div>
+        <div class="div4"> </div>
+        </div> 
+    <!-- Scripts JavaScript pour interagir avec le backend -->
+    <script src="./server.js">
+         // Fonction pour afficher la liste des photos partagées
+         function displayPhotos(photos) {
+            const photoList = document.getElementById('photoList');
+            photoList.innerHTML = '';
+
+            photos.forEach(photo => {
+                const photoDiv = document.createElement('div');
+
+                const img = document.createElement('img');
+                img.src = photo.url;
+
+                const likeButton = document.createElement('button');
+                likeButton.innerText = `Like (${photo.likes})`;
+                likeButton.addEventListener('click', () => {
+                    // Envoyer une requête au backend pour ajouter un like à la photo
+                    fetch(`/like/${photo.id}`, { method: 'POST' })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.message === "Like ajouté avec succès.") {
+                                photo.likes++;
+                                likeButton.innerText = `Like (${photo.likes})`;
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Erreur lors de l'ajout du like : ", error);
+                        });
+                });
+
+                const shareButton = document.createElement('button');
+                shareButton.innerText = 'Partager';
+                shareButton.addEventListener('click', () => {
+                    // Envoyer une requête au backend pour partager la photo (à implémenter)
+                    fetch(`/share/${photo.id}`, { method: 'POST' })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.message === "Photo partagée avec succès.") {
+                                alert("La photo a été partagée avec succès !");
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Erreur lors du partage de la photo : ", error);
+                        });
+                });
+
+                photoDiv.appendChild(img);
+                photoDiv.appendChild(likeButton);
+                photoDiv.appendChild(shareButton);
+
+                photoList.appendChild(photoDiv);
+            });
+        }
+
+        // Événement de soumission du formulaire de téléchargement de photo
+        const uploadForm = document.getElementById('uploadForm');
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const photoInput = document.getElementById('photoInput');
+            const photo = photoInput.files[0];
+
+            if (photo) {
+                const formData = new FormData();
+                formData.append('photo', photo);
+
+                // Envoyer la photo au backend pour téléchargement
+                fetch('/upload', { method: 'POST', body: formData })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.message === "Photo téléchargée avec succès.") {
+                            // Actualiser la liste des photos après le téléchargement
+                            fetch('/photos')
+                                .then(response => response.json())
+                                .then(photos => {
+                                    displayPhotos(photos);
+                                })
+                                .catch(error => {
+                                    console.error("Erreur lors de la récupération des photos : ", error);
+                                });
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Erreur lors du téléchargement de la photo : ", error);
+                    });
+            }
+        });
+
+        // Charger la liste initiale de photos lors du chargement de la page
+        fetch('/photos')
+            .then(response => response.json())
+            .then(photos => {
+                displayPhotos(photos);
+            })
+            .catch(error => {
+                console.error("Erreur lors de la récupération des photos : ", error);
+            });
+    </script>
+     <!-- Bouton pour afficher la pop-up -->
+    <button id="show-popup-button">+</button>
+
+    <!-- Pop-up pour télécharger une photo -->
+    <div id="upload-popup" class="popup">
+        <div class="popup-content">
+            <span class="close-button" id="close-popup-button">X</span>
+            <h2>Telecharger une Photo</h2>
+            <input type="file" id="photoInput" accept="image/*" required>
+            <button class="upload-button" id="upload-button">Telecharger</button>
+        </div>
+    </div>
+    <script>
+        // JavaScript pour afficher et masquer la pop-up
+        const showPopupButton = document.getElementById('show-popup-button');
+        const closePopupButton = document.getElementById('close-popup-button');
+        const uploadPopup = document.getElementById('upload-popup');
+        const fileInput = document.getElementById('file-input');
+
+        showPopupButton.addEventListener('click', () => {
+            uploadPopup.style.display = 'block';
+        });
+
+        closePopupButton.addEventListener('click', () => {
+            uploadPopup.style.display = 'none';
+        });
+
+        // JavaScript pour télécharger la photo
+        const uploadButton = document.getElementById('upload-button');
+
+        uploadButton.addEventListener('click', () => {
+            // Vérifier si un fichier a été sélectionné
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                // Vous pouvez envoyer le fichier au backend pour le téléchargement ici
+                // Par exemple, vous pouvez utiliser la méthode fetch pour envoyer le fichier.
+                // Assurez-vous de personnaliser cette partie pour votre backend.
+                console.log("Nom du fichier :", file.name);
+                console.log("Taille du fichier :", file.size, "octets");
+            } else {
+                alert("Sélectionnez un fichier à télécharger.");
+            }
+        });
+    </script>
+</body>
+</html>
